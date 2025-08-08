@@ -10,7 +10,9 @@
       "Bash(ollama:*)",
       "Bash(refreshenv)",
       "Bash(pip install:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ],
     "deny": []
   }

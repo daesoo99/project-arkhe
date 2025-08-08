@@ -6,6 +6,7 @@
 import re
 from typing import List, Dict, Tuple
 from dataclasses import dataclass
+from ..llm.llm_interface import llm_interface, LLMConfig, ModelType, get_default_model
 
 @dataclass
 class SubProblem:
@@ -190,25 +191,35 @@ class RecursiveAgent:
     
     def _solve_simple(self, problem: str, complexity: float) -> str:
         """단순 문제 해결 (재귀 없음)"""
-        # Mock 응답 생성
-        if "긍정적" in problem:
-            response = "긍정적 측면: 혁신과 발전의 기회를 제공합니다."
-        elif "부정적" in problem:
-            response = "부정적 측면: 위험과 부작용의 가능성이 있습니다."
-        elif "현재 상황" in problem:
-            response = "현재 상황: 급속한 변화와 불확실성이 특징입니다."
-        elif "트렌드" in problem:
-            response = "주요 트렌드: 기술 융합과 사회적 변화가 가속화되고 있습니다."
-        elif "철학적 관점" in problem:
-            response = "다양한 철학적 관점: 실용주의, 이상주의, 회의주의 등이 공존합니다."
+        
+        # LLM 설정 생성
+        config = LLMConfig(
+            model_type=get_default_model(),
+            temperature=0.7,
+            max_tokens=300,
+            timeout=30
+        )
+        
+        # 복잡도에 따른 프롬프트 조정
+        if complexity <= 3.0:
+            prompt = f"간단명료하게 답변해주세요: {problem}"
+        elif complexity <= 6.0:
+            prompt = f"적당한 수준의 설명을 포함하여 답변해주세요: {problem}"
         else:
-            response = f"복잡도 {complexity:.1f}의 문제에 대한 분석적 답변입니다."
+            prompt = f"상세하고 전문적으로 분석해서 답변해주세요: {problem}"
         
-        # 비용 추적 (단순화된 버전)
-        estimated_tokens = len(problem) + len(response)
-        self.cost_tracker.add_cost("gpt-3.5-turbo", estimated_tokens // 4, estimated_tokens // 4)
+        # 실제 LLM 호출
+        llm_response = llm_interface.generate_sync(prompt, config)
         
-        return response
+        # 비용 추적
+        self.cost_tracker.add_cost("gpt-3.5-turbo", llm_response.tokens_used // 2, llm_response.tokens_used // 2)
+        
+        # 응답 처리
+        if llm_response.success:
+            return llm_response.content
+        else:
+            # fallback 응답
+            return f"복잡도 {complexity:.1f}의 문제에 대한 분석적 답변입니다."
     
     def _synthesize_results(self, original_problem: str, sub_problems: List[SubProblem], sub_results: List[str]) -> str:
         """서브 결과들을 종합하여 최종 답변 생성"""
@@ -236,18 +247,28 @@ class FlatAgent:
     def solve(self, problem: str) -> str:
         """평면적 해결 (재귀 없음)"""
         
-        # 단일 에이전트로 전체 문제 해결
-        if "비교" in problem or "장단점" in problem:
-            response = "이 주제의 장점은 혁신과 효율성 향상이며, 단점은 위험과 비용 증가입니다. 균형잡힌 접근이 필요합니다."
-        elif "예측" in problem:
-            response = "현재 트렌드를 고려할 때, 기술 발전과 사회 변화가 지속되며 새로운 도전과 기회가 동시에 나타날 것으로 예상됩니다."
-        elif "철학" in problem:
-            response = "이는 복잡한 철학적 문제로, 다양한 관점이 존재합니다. 실용적 접근과 이론적 고찰을 균형있게 고려해야 합니다."
-        else:
-            response = "이 문제에 대해 종합적인 분석을 제공합니다. 다양한 요인들을 고려한 균형잡힌 답변입니다."
+        # LLM 설정 생성
+        config = LLMConfig(
+            model_type=get_default_model(),
+            temperature=0.7,
+            max_tokens=400,
+            timeout=30
+        )
+        
+        # 단순한 프롬프트 (재귀 분해 없이 직접 해결)
+        prompt = f"다음 문제를 종합적으로 분석하여 답변해주세요: {problem}"
+        
+        # 실제 LLM 호출
+        llm_response = llm_interface.generate_sync(prompt, config)
         
         # 비용 추적
-        estimated_tokens = len(problem) + len(response)
-        self.cost_tracker.add_cost("gpt-3.5-turbo", estimated_tokens // 3, estimated_tokens // 3)
+        self.cost_tracker.add_cost("gpt-3.5-turbo", llm_response.tokens_used // 2, llm_response.tokens_used // 2)
         
-        return f"[{self.name}|Flat] {response}"
+        # 응답 처리
+        if llm_response.success:
+            response_content = llm_response.content
+        else:
+            # fallback 응답
+            response_content = "이 문제에 대해 종합적인 분석을 제공합니다."
+        
+        return f"[{self.name}|Flat] {response_content}"

@@ -9,6 +9,7 @@ from dataclasses import dataclass
 import random
 import hashlib
 from enum import Enum
+from ..llm.llm_interface import llm_interface, LLMConfig, ModelType, get_default_model
 
 class IsolationLevel(Enum):
     """격리 수준 정의"""
@@ -126,26 +127,31 @@ class IsolatedAgent:
         if not self.context:
             return "격리 맥락이 설정되지 않았습니다."
         
-        # 사고 시드와 스타일을 바탕으로 다양한 접근
-        approach_modifier = self._get_approach_modifier()
+        # 사고 스타일에 따른 프롬프트 조정
+        style_prompt = self._create_style_specific_prompt(problem)
         
-        # 문제별 다양한 관점 생성
-        if "비교" in problem or "장단점" in problem:
-            response = self._solve_comparison_isolated(problem, approach_modifier)
-        elif "예측" in problem or "미래" in problem:
-            response = self._solve_prediction_isolated(problem, approach_modifier)
-        elif "원인" in problem or "요인" in problem:
-            response = self._solve_causal_isolated(problem, approach_modifier)
-        elif "철학" in problem or "의미" in problem:
-            response = self._solve_philosophical_isolated(problem, approach_modifier)
-        else:
-            response = self._solve_general_isolated(problem, approach_modifier)
+        # LLM 설정 생성 (기본 모델 사용)
+        config = LLMConfig(
+            model_type=get_default_model(),
+            temperature=0.8,  # 다양성을 위해 높게 설정
+            max_tokens=400,
+            timeout=30
+        )
+        
+        # 실제 LLM 호출
+        llm_response = llm_interface.generate_sync(style_prompt, config)
         
         # 비용 추적
-        estimated_tokens = len(problem) + len(response)
-        self.cost_tracker.add_cost("gpt-3.5-turbo", estimated_tokens // 3, estimated_tokens // 3)
+        self.cost_tracker.add_cost("gpt-3.5-turbo", llm_response.tokens_used // 2, llm_response.tokens_used // 2)
         
-        return f"[{self.name}|{self.thinking_style}|{self.context.thinking_seed}] {response}"
+        # 응답 포맷팅
+        if llm_response.success:
+            response_content = llm_response.content
+        else:
+            # fallback 응답
+            response_content = self._create_fallback_response(problem)
+        
+        return f"[{self.name}|{self.thinking_style}|{self.context.thinking_seed}] {response_content}"
     
     def _get_approach_modifier(self) -> str:
         """사고 시드와 스타일을 바탕으로 접근 방식 결정"""
@@ -162,37 +168,34 @@ class IsolatedAgent:
         
         return modifiers[seed_hash]
     
-    def _solve_comparison_isolated(self, problem: str, modifier: str) -> str:
-        """격리된 상태에서 비교 문제 해결"""
-        if "analytical" in self.thinking_style:
-            return f"{modifier} 체계적 분석 결과: 장점은 효율성과 혁신이며, 단점은 위험성과 비용입니다. 데이터 기반 접근이 필요합니다."
-        elif "creative" in self.thinking_style:
-            return f"{modifier} 창의적 관점: 기존 패러다임을 벗어난 새로운 가능성이 있지만, 예측 불가능한 부작용도 고려해야 합니다."
-        elif "skeptical" in self.thinking_style:
-            return f"{modifier} 비판적 검토: 표면적 장점들이 과장되었을 가능성이 있으며, 숨겨진 리스크들을 더 면밀히 조사해야 합니다."
-        else:
-            return f"{modifier} 균형적 평가: 긍정적 측면과 우려사항을 동시에 고려한 신중한 접근이 필요합니다."
+    def _create_style_specific_prompt(self, problem: str) -> str:
+        """사고 스타일에 따른 전용 프롬프트 생성"""
+        base_prompt = f"다음 문제에 대해 답변해주세요: {problem}\n\n"
+        
+        style_instruction = {
+            "analytical": "논리적이고 체계적인 분석을 통해 단계별로 접근해주세요. 데이터와 증거를 중시하며 객관적 관점에서 답변해주세요.",
+            "creative": "창의적이고 혁신적인 관점에서 접근해주세요. 기존 틀에서 벗어난 새로운 아이디어나 해결책을 제시해주세요.",
+            "practical": "현실적이고 실용적인 관점에서 답변해주세요. 실제 적용 가능성과 구현 방법에 중점을 두어주세요.",
+            "skeptical": "비판적이고 의문을 제기하는 관점에서 접근해주세요. 잠재적 문제점이나 한계를 지적하며 신중하게 검토해주세요.",
+            "optimistic": "긍정적이고 희망적인 관점에서 답변해주세요. 가능성과 기회에 초점을 맞춰주세요."
+        }
+        
+        instruction = style_instruction.get(self.thinking_style, "균형잡힌 관점에서 답변해주세요.")
+        
+        return base_prompt + instruction
     
-    def _solve_prediction_isolated(self, problem: str, modifier: str) -> str:
-        """격리된 상태에서 예측 문제 해결"""
-        if "optimistic" in self.thinking_style:
-            return f"{modifier} 낙관적 전망: 기술 발전과 사회적 적응을 통해 긍정적 변화가 예상되며, 새로운 기회들이 창출될 것입니다."
-        elif "skeptical" in self.thinking_style:
-            return f"{modifier} 신중한 예측: 불확실성이 높으며, 여러 리스크 시나리오를 고려한 대비책이 필요합니다."
-        else:
-            return f"{modifier} 균형적 예측: 기술적 진보와 사회적 도전이 공존하는 복합적 미래가 예상됩니다."
+    def _create_fallback_response(self, problem: str) -> str:
+        """LLM 호출 실패 시 fallback 응답 생성"""
+        style_responses = {
+            "analytical": "이 문제는 체계적 분석이 필요합니다. 데이터 수집과 단계별 검토를 통해 접근해야 합니다.",
+            "creative": "이 문제에는 혁신적 접근이 필요합니다. 기존 관념을 벗어난 새로운 관점을 시도해볼 수 있습니다.",
+            "practical": "이 문제는 실용적 해결책이 중요합니다. 실현 가능한 방법론을 중심으로 접근해야 합니다.",
+            "skeptical": "이 문제에는 신중한 검토가 필요합니다. 잠재적 위험과 한계를 면밀히 살펴봐야 합니다.",
+            "optimistic": "이 문제는 새로운 기회의 관점에서 볼 수 있습니다. 긍정적 가능성을 탐색해볼 가치가 있습니다."
+        }
+        
+        return style_responses.get(self.thinking_style, "이 문제에 대한 균형잡힌 분석이 필요합니다.")
     
-    def _solve_causal_isolated(self, problem: str, modifier: str) -> str:
-        """격리된 상태에서 원인 분석"""
-        return f"{modifier} 다층적 원인 분석: 직접적 요인들과 근본적 구조적 문제들을 구분하여 접근해야 합니다."
-    
-    def _solve_philosophical_isolated(self, problem: str, modifier: str) -> str:
-        """격리된 상태에서 철학적 문제 해결"""
-        return f"{modifier} 철학적 탐구: 존재론적, 인식론적 관점에서 근본적 질문들을 제기하며, 다원적 가치 체계를 고려해야 합니다."
-    
-    def _solve_general_isolated(self, problem: str, modifier: str) -> str:
-        """격리된 상태에서 일반적 문제 해결"""
-        return f"{modifier} 종합적 접근: 다각도 분석을 통한 포괄적 이해와 실행 가능한 해결 방안이 필요합니다."
 
 class TransparentAgent:
     """완전한 정보 공유 상태에서 동작하는 기존 방식 에이전트"""
@@ -214,34 +217,38 @@ class TransparentAgent:
         """공유된 정보를 활용한 문제 해결"""
         
         # 공유된 맥락 정보 활용
+        context_info = ""
         if self.shared_context:
-            context_summary = "공유 정보 참고: " + "; ".join(self.shared_context[-3:])  # 최근 3개만
+            context_info = "; ".join(self.shared_context[-3:])  # 최근 3개만
+            
+        # 공유 정보를 포함한 프롬프트 생성
+        if context_info:
+            enhanced_prompt = f"다음 문제에 답변해주세요: {problem}\n\n다른 전문가들의 의견 참고: {context_info}\n\n위 의견들을 참고하여 종합적이고 균형잡힌 답변을 제공해주세요."
         else:
-            context_summary = ""
+            enhanced_prompt = f"다음 문제에 답변해주세요: {problem}"
         
-        # 문제 해결 (공유 정보의 영향으로 유사한 답변 경향)
-        if "비교" in problem:
-            base_response = "장점은 효율성과 혁신, 단점은 위험과 비용입니다. 균형잡힌 접근이 필요합니다."
-        elif "예측" in problem:
-            base_response = "기술 발전과 사회 변화가 지속되며, 기회와 도전이 공존할 것으로 예상됩니다."
-        elif "철학" in problem:
-            base_response = "복잡한 철학적 문제로, 다양한 관점의 균형적 고려가 필요합니다."
-        else:
-            base_response = "종합적 분석을 통한 체계적 접근이 중요합니다."
+        # LLM 설정 생성
+        config = LLMConfig(
+            model_type=get_default_model(),
+            temperature=0.5,  # 일관성을 위해 낮게 설정
+            max_tokens=400,
+            timeout=30
+        )
         
-        # 공유 정보의 영향으로 답변이 수렴하는 경향 시뮬레이션
-        if self.shared_context and any("효율성" in ctx for ctx in self.shared_context):
-            base_response = base_response.replace("혁신", "효율성 중심의 혁신")
-        
-        response = base_response
-        if context_summary:
-            response += f" [{context_summary[:50]}... 참고]"
+        # 실제 LLM 호출
+        llm_response = llm_interface.generate_sync(enhanced_prompt, config)
         
         # 비용 추적
-        estimated_tokens = len(problem) + len(response) + len(context_summary)
-        self.cost_tracker.add_cost("gpt-3.5-turbo", estimated_tokens // 3, estimated_tokens // 3)
+        self.cost_tracker.add_cost("gpt-3.5-turbo", llm_response.tokens_used // 2, llm_response.tokens_used // 2)
         
-        return f"[{self.name}|Shared] {response}"
+        # 응답 포맷팅
+        if llm_response.success:
+            response_content = llm_response.content
+        else:
+            # fallback 응답
+            response_content = "종합적 분석을 통한 체계적 접근이 중요합니다."
+        
+        return f"[{self.name}|Shared] {response_content}"
 
 class CrossValidationEngine:
     """교차 검증 엔진 - 독립적 결과들의 일치/불일치 분석"""
