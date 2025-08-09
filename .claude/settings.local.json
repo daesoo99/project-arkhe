@@ -12,7 +12,20 @@
       "Bash(pip install:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(npm update:*)",
+      "Bash(mv:*)",
+      "Bash(timeout:*)",
+      "Bash(git checkout:*)",
+      "Bash(git tag:*)",
+      "Bash(mkdir:*)",
+      "Bash(for f in test_*.py)",
+      "Bash(do [ -f \"$f\" ])",
+      "Bash(git mv:*)",
+      "Bash(done)",
+      "Bash(true)",
+      "Bash(rm:*)"
     ],
     "deny": []
   }

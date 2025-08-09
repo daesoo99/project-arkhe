@@ -1,0 +1,220 @@
+{
+  "closed_form_questions": [
+    {
+      "id": "cf_001",
+      "query": "대한민국의 수도는?",
+      "expected_answer": "서울",
+      "category": "geography",
+      "difficulty": "easy"
+    },
+    {
+      "id": "cf_002", 
+      "query": "What is 2 + 2?",
+      "expected_answer": "4",
+      "category": "math",
+      "difficulty": "easy"
+    },
+    {
+      "id": "cf_003",
+      "query": "Python에서 리스트를 정렬하는 메서드는?",
+      "expected_answer": "sort() 또는 sorted()",
+      "category": "programming",
+      "difficulty": "easy"
+    },
+    {
+      "id": "cf_004",
+      "query": "HTTP의 기본 포트 번호는?",
+      "expected_answer": "80",
+      "category": "networking",
+      "difficulty": "easy"
+    },
+    {
+      "id": "cf_005",
+      "query": "일년에 몇 개월이 있는가?",
+      "expected_answer": "12개월",
+      "category": "general",
+      "difficulty": "easy"
+    },
+    {
+      "id": "cf_006",
+      "query": "Shannon entropy의 단위는?",
+      "expected_answer": "bits (또는 nats)",
+      "category": "information_theory",
+      "difficulty": "medium"
+    },
+    {
+      "id": "cf_007",
+      "query": "시간 복잡도 O(n log n)인 정렬 알고리즘 하나는?",
+      "expected_answer": "merge sort, heap sort, quick sort (평균)",
+      "category": "algorithms",
+      "difficulty": "medium"
+    },
+    {
+      "id": "cf_008",
+      "query": "TCP/IP의 전체 형태는?",
+      "expected_answer": "Transmission Control Protocol/Internet Protocol",
+      "category": "networking", 
+      "difficulty": "medium"
+    },
+    {
+      "id": "cf_009",
+      "query": "REST API에서 리소스 생성에 사용하는 HTTP 메서드는?",
+      "expected_answer": "POST",
+      "category": "web_development",
+      "difficulty": "medium"
+    },
+    {
+      "id": "cf_010",
+      "query": "Git에서 변경사항을 되돌리는 명령어는?",
+      "expected_answer": "git revert 또는 git reset",
+      "category": "version_control",
+      "difficulty": "medium"
+    },
+    {
+      "id": "cf_011",
+      "query": "머신러닝에서 overfitting을 방지하는 기법 하나는?",
+      "expected_answer": "regularization, dropout, cross-validation, early stopping",
+      "category": "machine_learning",
+      "difficulty": "hard"
+    },
+    {
+      "id": "cf_012",
+      "query": "분산 시스템에서 CAP 정리의 CAP는 무엇의 약자인가?",
+      "expected_answer": "Consistency, Availability, Partition tolerance",
+      "category": "distributed_systems",
+      "difficulty": "hard"
+    },
+    {
+      "id": "cf_013",
+      "query": "Deep learning에서 vanishing gradient 문제를 해결하는 activation function은?",
+      "expected_answer": "ReLU, LeakyReLU, ELU, Swish",
+      "category": "deep_learning",
+      "difficulty": "hard"
+    },
+    {
+      "id": "cf_014",
+      "query": "NoSQL 데이터베이스 유형 중 하나는?",
+      "expected_answer": "document, key-value, column-family, graph",
+      "category": "database",
+      "difficulty": "hard"
+    },
+    {
+      "id": "cf_015",
+      "query": "함수형 프로그래밍의 핵심 원칙 중 하나는?",
+      "expected_answer": "immutability, pure functions, no side effects",
+      "category": "programming_paradigm",
+      "difficulty": "hard"
+    }
+  ],
+  
+  "open_form_questions": [
+    {
+      "id": "of_001",
+      "query": "인공지능과 머신러닝의 차이점을 설명하시오",
+      "category": "explanation",
+      "difficulty": "medium",
+      "evaluation_criteria": ["정확성", "명확성", "완전성", "구체성"]
+    },
+    {
+      "id": "of_002", 
+      "query": "REST API의 장점과 단점을 비교 분석하시오",
+      "category": "analysis",
+      "difficulty": "medium",
+      "evaluation_criteria": ["균형성", "깊이", "실용성", "사례 제시"]
+    },
+    {
+      "id": "of_003",
+      "query": "데이터베이스 정규화의 필요성과 과정을 설명하시오",
+      "category": "process_explanation",
+      "difficulty": "hard",
+      "evaluation_criteria": ["이론적 정확성", "단계별 설명", "실례", "장단점"]
+    },
+    {
+      "id": "of_004",
+      "query": "클라우드 컴퓨팅의 서비스 모델(IaaS, PaaS, SaaS)을 비교하고 각각의 사용 사례를 제시하시오",
+      "category": "comparison",
+      "difficulty": "hard", 
+      "evaluation_criteria": ["정확한 정의", "차이점 명확화", "적절한 사례", "실무 적용성"]
+    },
+    {
+      "id": "of_005",
+      "query": "마이크로서비스 아키텍처의 도입을 고려할 때 고려해야 할 요소들을 종합적으로 분석하시오",
+      "category": "comprehensive_analysis",
+      "difficulty": "very_hard",
+      "evaluation_criteria": ["포괄성", "실무 관점", "위험 분석", "의사결정 지원"]
+    },
+    {
+      "id": "of_006",
+      "query": "AI 윤리의 주요 쟁점들과 해결 방안을 제시하시오",
+      "category": "ethical_analysis", 
+      "difficulty": "very_hard",
+      "evaluation_criteria": ["쟁점 식별", "다각적 관점", "현실성", "균형성"]
+    },
+    {
+      "id": "of_007",
+      "query": "블록체인 기술의 작동 원리와 한계점을 설명하시오",
+      "category": "technical_explanation",
+      "difficulty": "hard",
+      "evaluation_criteria": ["기술적 정확성", "이해하기 쉬운 설명", "한계 인식", "적용 분야"]
+    },
+    {
+      "id": "of_008",
+      "query": "DevOps 문화 도입 시 조직이 직면하는 도전과 극복 방안을 분석하시오",
+      "category": "organizational_analysis",
+      "difficulty": "hard",
+      "evaluation_criteria": ["현실적 도전 인식", "실현 가능한 해결책", "조직론적 관점", "점진적 접근"]
+    },
+    {
+      "id": "of_009",
+      "query": "빅데이터 처리를 위한 기술 스택 선택 시 고려사항을 체계적으로 설명하시오",
+      "category": "technology_selection",
+      "difficulty": "very_hard",
+      "evaluation_criteria": ["기술적 깊이", "비용-효율성 고려", "확장성 분석", "실무 경험 반영"]
+    },
+    {
+      "id": "of_010",
+      "query": "소프트웨어 아키텍처 설계 원칙과 그 적용 방법을 구체적인 예와 함께 설명하시오",
+      "category": "architectural_principles",
+      "difficulty": "very_hard", 
+      "evaluation_criteria": ["원칙의 정확한 이해", "구체적 예시", "실무 적용성", "트레이드오프 분석"]
+    }
+  ],
+  
+  "mixed_language_questions": [
+    {
+      "id": "ml_001",
+      "query": "What are the key differences between supervised and unsupervised learning? 지도학습과 비지도학습의 차이점을 설명하시오.",
+      "category": "bilingual_explanation",
+      "difficulty": "medium",
+      "language_mix": ["en", "ko"]
+    },
+    {
+      "id": "ml_002",
+      "query": "Explain the concept of 'overfitting' in machine learning. 과적합이란 무엇인가?",
+      "category": "bilingual_concept",
+      "difficulty": "medium", 
+      "language_mix": ["en", "ko"]
+    },
+    {
+      "id": "ml_003",
+      "query": "API 설계에서 RESTful principles를 어떻게 적용하는가? How do you apply RESTful principles in API design?",
+      "category": "bilingual_technical",
+      "difficulty": "hard",
+      "language_mix": ["ko", "en"]
+    },
+    {
+      "id": "ml_004", 
+      "query": "데이터베이스의 ACID properties와 BASE model을 비교하시오. Compare ACID properties and BASE model in databases.",
+      "category": "bilingual_comparison",
+      "difficulty": "hard",
+      "language_mix": ["ko", "en"]
+    },
+    {
+      "id": "ml_005",
+      "query": "What is the significance of 'information entropy' in Claude Shannon's theory? 클로드 섀넌의 정보 엔트로피가 왜 중요한가?",
+      "category": "bilingual_theory",
+      "difficulty": "very_hard",
+      "language_mix": ["en", "ko"]
+    }
+  ]
+}

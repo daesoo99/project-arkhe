@@ -1,1 +1,27 @@
-\".venv/\n.env\n__pycache__/\n*.pyc\n.idea/\n.vscode/\" 
+# Environment
+.venv/
+.env
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.idea/
+.vscode/
+
+# Runtime artifacts  
+logs/
+artifacts/
+*.log
+*.tmp
+
+# OS/Editor
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Experiment results (too many files)
+experiments/results/*.json
+experiments/results/*.csv
+results/*.json
+results/*.csv
