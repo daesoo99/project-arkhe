@@ -114,8 +114,37 @@ class IsolationPipeline:
         )
         
         total_time = int((time.time() - start_time) * 1000)
-        total_tokens = sum(len(sample.split()) for samples in [draft_samples, review_samples, judge_samples] 
-                          for sample in samples)
+        
+        # 정확한 토큰 계산
+        try:
+            import tiktoken
+            encoder = tiktoken.encoding_for_model("gpt-4")
+            
+            # 각 단계별 입력/출력 토큰 계산
+            total_tokens = 0
+            
+            # Draft 단계
+            draft_input = f"Answer this question concisely: {query}"
+            total_tokens += len(encoder.encode(draft_input)) * 3  # 3개 샘플
+            for sample in draft_samples:
+                total_tokens += len(encoder.encode(sample))
+            
+            # Review 단계  
+            review_input = f"Improve this draft answer: {query} Draft answers: {' | '.join(draft_samples)}"
+            total_tokens += len(encoder.encode(review_input)) * 2  # 2개 샘플
+            for sample in review_samples:
+                total_tokens += len(encoder.encode(sample))
+            
+            # Judge 단계
+            judge_input = f"Provide the final, highest quality answer: {query} Draft answers: {' | '.join(draft_samples)} Review answers: {' | '.join(review_samples)}"
+            total_tokens += len(encoder.encode(judge_input)) * 1  # 1개 샘플
+            for sample in judge_samples:
+                total_tokens += len(encoder.encode(sample))
+                
+        except ImportError:
+            # 폴백: 단어 수 기반
+            total_tokens = sum(len(sample.split()) for samples in [draft_samples, review_samples, judge_samples] 
+                              for sample in samples)
         
         result = IsolationExperimentResult(
             isolation_level=self.isolation_level,
@@ -148,13 +177,13 @@ class IsolationPipeline:
     
     def _run_draft_stage(self, llm_factory) -> List[str]:
         """초안 단계 실행 (항상 독립)"""
-        print(f"  [1/3] Draft stage - {self.k_samples} samples")
+        print(f"  [1/3] Draft stage - 3 samples")
         
         llm = llm_factory("qwen2:0.5b")
         prompt = f"Answer this question concisely: {self.context['query']}"
         
         samples = []
-        for i in range(self.k_samples):
+        for i in range(3):
             response = llm.generate(prompt, temperature=0.8)
             text = response.get("response", str(response)) if isinstance(response, dict) else str(response)
             samples.append(text)
@@ -163,12 +192,12 @@ class IsolationPipeline:
     
     def _run_review_stage(self, llm_factory, draft_samples: List[str]) -> List[str]:
         """검토 단계 실행"""
-        print(f"  [2/3] Review stage - {self.k_samples} samples - {self.isolation_level.value}")
+        print(f"  [2/3] Review stage - 2 samples - {self.isolation_level.value}")
         
-        llm = llm_factory("gemma:2b")
+        llm = llm_factory("qwen2:0.5b")
         samples = []
         
-        for i in range(self.k_samples):
+        for i in range(2):
             if self.isolation_level == IsolationLevel.NONE:
                 # 모든 draft 정보 공유
                 prompt = f"""Improve this draft answer:
@@ -199,12 +228,12 @@ Improved answer:"""
     def _run_judge_stage(self, llm_factory, draft_samples: List[str], 
                         review_samples: List[str]) -> List[str]:
         """판정 단계 실행"""
-        print(f"  [3/3] Judge stage - {self.k_samples} samples - {self.isolation_level.value}")
+        print(f"  [3/3] Judge stage - 1 sample - {self.isolation_level.value}")
         
         llm = llm_factory("llama3:8b")
         samples = []
         
-        for i in range(self.k_samples):
+        for i in range(1):
             if self.isolation_level == IsolationLevel.NONE:
                 # 모든 이전 정보 공유
                 prompt = f"""Provide the final, highest quality answer:
@@ -307,18 +336,40 @@ Final answer:"""
         return (js1 + js2 + js3) / 3.0
 
 def create_isolation_experiment_suite():
-    """격리 실험 스위트 생성"""
+    """표준 벤치마크 기반 격리 실험 스위트"""
+    import sys
+    from pathlib import Path
+    sys.path.append(str(Path(__file__).parent.parent.parent / "datasets"))
     
-    # 테스트 질문들 (다양한 난이도)
-    test_questions = [
-        {"id": "simple_geo", "query": "대한민국의 수도는?", "expected": "서울"},
-        {"id": "simple_math", "query": "What is 2 + 2?", "expected": "4"},
-        {"id": "medium_prog", "query": "Python에서 리스트를 정렬하는 메서드는?", "expected": "sort"},
-        {"id": "medium_net", "query": "HTTP의 기본 포트 번호는?", "expected": "80"},
-        {"id": "hard_algo", "query": "시간 복잡도 O(n log n)인 정렬 알고리즘은?", "expected": "merge sort"}
-    ]
-    
-    return test_questions
+    try:
+        from standard_benchmarks import StandardBenchmarkLoader
+        loader = StandardBenchmarkLoader()
+        
+        # 각 카테고리에서 2개씩 선택
+        questions = loader.get_questions(count=12, categories=["math", "knowledge", "coding"])
+        
+        # 기존 포맷으로 변환
+        test_questions = []
+        for q in questions:
+            test_questions.append({
+                "id": q.id,
+                "query": q.query,
+                "expected": q.expected_answer
+            })
+        
+        print(f"[+] Loaded {len(test_questions)} standard benchmark questions")
+        return test_questions
+        
+    except ImportError:
+        # 폴백: 기존 간단한 질문들
+        print("[!] Using fallback questions (standard benchmarks not available)")
+        return [
+            {"id": "simple_geo", "query": "대한민국의 수도는?", "expected": "서울"},
+            {"id": "simple_math", "query": "What is 2 + 2?", "expected": "4"},
+            {"id": "medium_prog", "query": "Python에서 리스트를 정렬하는 메서드는?", "expected": "sort"},
+            {"id": "medium_net", "query": "HTTP의 기본 포트 번호는?", "expected": "80"},
+            {"id": "hard_algo", "query": "시간 복잡도 O(n log n)인 정렬 알고리즘은?", "expected": "merge sort"}
+        ]
 
 def run_isolation_comparison_experiment(llm_factory):
     """격리 수준 비교 실험 실행"""

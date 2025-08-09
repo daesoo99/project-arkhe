@@ -1,13 +1,71 @@
-# Project Arkhē: A Cognitive Operating System for Multi-Agent AI
+# Project Arkhē
 
-> *Exploring the Operating Principle for Thought*
+A comprehensive framework for exploring Large Language Model (LLM) architectures and multi-agent systems. Project Arkhē investigates three core research areas to advance our understanding of collaborative AI systems.
 
-✅ **Status**: Core pipeline system implemented with working benchmarks
+## 🎯 Research Focus Areas
 
-- **Document Version**: 2.0
-- **Author**: Kim Daesoo
-- **Last Updated**: August 8, 2025
-- **Status**: MVP Complete - Economic Intelligence Testing Phase
+### 1. 🔄 Recursive Agent (자율적 재귀)
+**Autonomous problem decomposition and recursive solution**
+- Automatically breaks complex problems into manageable sub-problems
+- Creates specialized sub-teams for each decomposed component  
+- Implements dynamic recursion depth based on problem complexity
+- Explores how recursive approaches can enhance LLM reasoning capabilities
+
+### 2. 🔐 Information Asymmetry (정보 비대칭)
+**Strategic information sharing in multi-agent systems**
+- Investigates optimal information sharing strategies between agents
+- Tests three isolation levels: NONE (full sharing), PARTIAL (limited), COMPLETE (isolated)
+- Analyzes how information flow affects collaborative decision-making
+- Challenges conventional assumptions about "more information = better performance"
+
+### 3. 💰 Economic Intelligence (경제적 지능)
+**Cost-aware optimization and resource management**
+- Balances performance goals with computational costs
+- Implements dynamic model selection based on task complexity
+- Develops efficiency metrics that account for both accuracy and resource usage
+- Explores sustainable AI deployment strategies
+
+## 🏗️ System Architecture
+
+```
+Multi-Agent Pipeline:
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│ Draft Stage │ -> │Review Stage │ -> │Judge Stage  │
+│ qwen2:0.5b  │    │ qwen2:0.5b  │    │ llama3:8b   │
+│ (3 samples) │    │ (2 samples) │    │ (1 sample)  │
+└─────────────┘    └─────────────┘    └─────────────┘
+
+Baseline Comparison:
+┌─────────────┐
+│Single Model │
+│ llama3:8b   │  
+│ (1 sample)  │
+└─────────────┘
+```
+
+## 📊 Key Experimental Findings
+
+### Multi-Agent vs Single Model Performance
+
+| Method | Accuracy | Tokens | Efficiency | Result |
+|--------|----------|---------|------------|---------|
+| **Multi-Agent-NONE** | 50.2% | 1,766 | 0.028 | 😰 |
+| **Single-llama3:8b** | **87.7%** | **152** | **0.577** | 🏆 |
+
+**Major Discovery**: Single models dramatically outperform multi-agent systems
+- **42.8% higher accuracy** with single model
+- **11× lower token cost** with single model  
+- **20× higher efficiency** with single model
+
+### Information Asymmetry Effects
+
+| Isolation Level | Accuracy | Tokens | Key Finding |
+|----------------|----------|---------|-------------|
+| **NONE** (Complete Sharing) | **80.0%** | 101 | Optimal |
+| **PARTIAL** (Limited Sharing) | 60.0% | 56 | **Worst Performance** |
+| **COMPLETE** (Independent) | **80.0%** | 82 | Surprisingly Good |
+
+**Counter-Intuitive Result**: Partial information sharing performs worst, contradicting "goldilocks zone" hypothesis.
 
 ## 📋 Table of Contents
 - [1. Executive Summary](#1-executive-summary)

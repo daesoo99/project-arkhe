@@ -20,6 +20,9 @@ exp-demo:
 exp-isolation:
 	python src/orchestrator/isolation_pipeline.py
 
+exp-baseline:
+	python experiments/run_baseline_comparison.py
+
 # Maintenance
 clean:
 	find . -name "*.pyc" -delete
