@@ -1,27 +1,43 @@
+# Runtime files
+logs/
+results/
+failed_hypotheses/
+*.log
+*.tmp
+.DS_Store
+
 # Environment
-.venv/
 .env
+.venv/
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
-.idea/
-.vscode/
 
-# Runtime artifacts  
-logs/
-artifacts/
-*.log
-*.tmp
+# Notebooks cache  
+.ipynb_checkpoints/
 
-# OS/Editor
-.DS_Store
+# OS / IDE
 Thumbs.db
+.vscode/
+.idea/
 *.swp
 *.swo
 
-# Experiment results (too many files)
-experiments/results/*.json
-experiments/results/*.csv
-results/*.json
-results/*.csv
+# Large files (use LFS)
+*.csv
+*.json
+*.jsonl
+
+# Keep examples and datasets
+!results/examples/
+!datasets/*.json
+!datasets/*.py
+
+# Archive directory (800+ lines)
+archive/
+
+# Temporary experiment files
+experiments/temp/
+experiments/*/output/
+artifacts/

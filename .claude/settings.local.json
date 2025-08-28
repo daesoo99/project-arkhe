@@ -25,7 +25,12 @@
       "Bash(git mv:*)",
       "Bash(done)",
       "Bash(true)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(cp:*)",
+      "Bash(copy:*)",
+      "Bash(move:*)",
+      "Bash(grep:*)",
+      "Bash(find:*)"
     ],
     "deny": []
   }

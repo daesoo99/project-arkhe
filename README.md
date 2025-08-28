@@ -391,6 +391,31 @@ Conclusion: Smart routing needed for multi-agent efficiency
 - [ ] Scaling to production environments
 - [ ] Framework generalization and standardization
 
+## 📋 Core Assumptions
+
+### Multi-Agent Architecture
+- **Pipeline Sequential Processing**: Each stage builds upon previous stage outputs
+- **Information Flow Control**: Different isolation levels affect performance
+- **Collaborative Intelligence**: Multiple weaker models can potentially outperform single strong model
+- **Stage Specialization**: Different roles (Draft/Review/Judge) optimize for different aspects
+
+### Model Configurations
+- **Draft Stage**: `qwen2:0.5b` × 3 samples (diverse initial responses)
+- **Review Stage**: `qwen2:0.5b` × 2 samples (filtering and improvement)
+- **Judge Stage**: `llama3:8b` × 1 sample (authoritative final decision)
+- **Baseline**: `llama3:8b` single model for comparison
+
+### Information Sharing Models
+- **NONE**: Complete information sharing between all stages
+- **PARTIAL**: Limited information sharing (1-to-1 connections) 
+- **COMPLETE**: Full isolation between agents
+
+### Evaluation Methodology
+- **Token Counting**: GPT-4 tiktoken for fair comparison across models
+- **Accuracy**: String inclusion + word overlap matching
+- **Efficiency**: Accuracy ÷ (Tokens ÷ 100)
+- **Datasets**: GSM8K (math), MMLU (knowledge), HumanEval (coding)
+
 ## 11. Contributing
 
 ### 🌟 How to Help
@@ -428,6 +453,194 @@ MIT License - Free for commercial use, modification, and distribution
 - **arXiv Paper**: [Coming Soon]
 - **Documentation**: [Wiki Pages]
 - **Community**: [Discord Server]
+
+---
+
+## 📘 Conversation-Driven Experiment Protocol (v1.0, KST)
+
+### 0) 프로토콜 메타데이터 (CLI 파싱용)
+```yaml
+protocol_id: arkhē.cdep.v1
+files:
+  experiment_log: "EXPERIMENT_LOG.md"   # 공식 히스토리(가설/실험/결과/원인/DECISION/계획/실행상태/링크)
+  summary_log:    "SUMMARY_LOG.md"      # 한 줄 결론/핵심 수치/다음 액션
+  detail_log:     "DETAIL_LOG.md"       # 커맨드, 파라미터 표, env, 로그/에러, git 해시, diff, 산출물
+failed_dir: "failed_hypotheses"         # 이상 결과를 낳은 코드/노트북 보관 디렉터리
+naming:
+  session_slug: "{YYYYMMDD-HHMM}_{short-title-kebab}"
+  failed_file:  "{YYYYMMDD-HHMM}_{short-title-kebab}_{reason-kebab}.{py|ipynb}"
+states:
+  - HYPOTHESIS
+  - PLAN
+  - RUN
+  - OBSERVE
+  - DIAGNOSE
+  - DECISION
+  - PLANS        # 분기 다수 허용, 각 항목은 후속 세션 슬러그로 연결
+  - EXEC_STATUS  # 진행중/완료(→후속 슬러그)/대기/취소
+save_triggers:   # 필수 저장 시점
+  - on_new_hypothesis
+  - on_result_confirmed
+  - on_direction_changed   # DECISION으로 분기 재정의 포함
+summary_policy:
+  line: "[{session_slug}] {one_line_conclusion} | {key_metrics} | Next: {next_action} (Decision: {short_decision})"
+evidence_policy:
+  success: "git_commit_hash, key_params, outputs → DETAIL_LOG.md 기록"
+  anomaly: "코드/노트북을 failed_hypotheses/로 복사·고정 + 경로를 EXPERIMENT_LOG.md와 DETAIL_LOG.md에 명시"
+```
+
+### 1) 운영 원칙(문서 4개만 사용)
+
+* **README.md**: 본 프로토콜만 유지(실험 데이터 기록 금지).
+* **EXPERIMENT\_LOG.md**: 단일 사실 원본(Single Source of Truth). 모든 세션은 **섹션 단위**로 누적.
+* **SUMMARY\_LOG.md**: 한 줄 요약/핵심 수치/다음 액션. 빠른 회고용.
+* **DETAIL\_LOG.md**: 재현에 필요한 근거(커맨드, 파라미터 표, env, 로그/에러, git 해시, diff, 산출물 경로).
+* **중복 금지**: 수치·결과는 EXPERIMENT\_LOG → 요약만 SUMMARY\_LOG → 증거는 DETAIL\_LOG.
+
+### 2) 연구자 주도형 진행 (권장)
+
+**핵심 원칙**: 연구자가 자연스럽게 작업하고, 프로토콜은 **기록 양식**으로 활용
+
+* **실험 계획**: 연구자가 직접 구현 방향 결정
+* **구현 & 실행**: 연구자가 직접 코딩, 테스트, 실행  
+* **결과 기록**: EXPERIMENT_LOG.md에 구조화된 형태로 기록
+* **분석 & 논의**: AI와 함께 결과 해석, 다음 방향 논의
+
+### 3) 대화 주도형 진행 (선택적 사용)
+
+**사용 시기**: 방향성이 unclear하거나 체계적 정리가 필요할 때만
+
+* **HYPOTHESIS**: "가설과 근거, 기대 결과를 정리해보자"
+* **PLAN**: "구현 방향과 측정 방법을 함께 정리해보자" (표 강제 X)
+* **RUN**: "구현 완료됐으면 실행하고 결과 공유해주세요"  
+* **OBSERVE**: "결과 수치와 예상과의 차이점을 정리해보자"
+* **DIAGNOSE**: "예상과 다른 부분이 있다면 원인을 함께 분석해보자"
+* **DECISION**: "다음 방향을 함께 결정해보자"
+* **PLANS**: "앞으로 할 일들을 정리하고 우선순위를 매겨보자"
+
+### 4) 기록 규칙(분기·연결형)
+
+* 계획이 1개든 10개든 **모두 PLANS 목록**에 ID(=후속 세션 슬러그)를 부여.
+* 후속 실험은 **새 섹션으로 작성**하고, 상위 세션의 PLANS/EXEC\_STATUS에 **슬러그 링크**로 연결.
+* 방향성 변경은 **DECISION**에서 선언하고, 변경된 계획을 PLANS로 확장.
+
+### 5) 템플릿
+
+**A. EXPERIMENT\_LOG.md**
+
+```
+## [{session_slug}] {title}
+- 가설: …
+- 실험:
+  - 데이터/모델/파라미터/커맨드:
+    - data: …
+    - models: …
+    - params: …
+    - cmd: `...`
+- 결과: …
+- 원인 분석: …
+- [DECISION]
+  - 선택: …
+  - 근거: …
+  - 영향: …
+- [구현 방안] (여러 방안이 있을 경우):
+  - **방안A: {방안명}**
+    - 200자 이내로 방안의 핵심 아이디어, 구현 방법, 기대 효과를 포함한 상세 설명
+  - **방안B: {방안명}**
+    - 200자 이내로 방안의 핵심 아이디어, 구현 방법, 기대 효과를 포함한 상세 설명
+- 향후 계획(분기 가능):
+  1) [{next_slug_A}] …(요약)
+  2) [{next_slug_B}] …(요약)
+  3) [{next_slug_C}] …(요약)
+- 실행 상태:
+  - [{next_slug_A}]: 진행중
+  - [{next_slug_B}]: 완료 → 결과: 세션 [{next_slug_B}] 참조
+  - [{next_slug_C}]: 대기
+- 관련:
+  - DETAIL_LOG.md#[{session_slug}]
+  - 실패 코드(있으면): failed_hypotheses/{YYYYMMDD-HHMM}_{short-title}_{reason}.py
+```
+
+**B. SUMMARY\_LOG.md**
+
+```
+[{session_slug}] {한 줄 결론} | {핵심 수치1~3} | Next: {다음 액션 1줄} (Decision: {요약})
+```
+
+**C. DETAIL\_LOG.md**
+
+```
+## [{session_slug}] {title}
+### Command
+`...`
+### Parameters
+| key | value |
+|-----|-------|
+| …   | …     |
+### Environment
+- python: …
+- libs: …
+### Logs / Errors
+<필요 부분만 발췌 또는 경로 명시>
+### Git / Diff
+- commit: abc123
+- dirty: yes/no  (yes면 변경 파일 목록 요약)
+### Artifacts
+- outputs: path/to/…
+- figures: path/to/…
+### Decision Evidence
+- metrics: …
+- 비교표/도표 요약: …
+```
+
+### 6) 아티팩트 보관 규칙
+
+* **정상 결과**: 코드 보관 불필요. 커밋 해시·파라미터·산출물 경로만 DETAIL\_LOG에 기록.
+* **이상 결과**: 관련 코드/노트북을
+  `failed_hypotheses/{YYYYMMDD-HHMM}_{short-title}_{reason}.{py|ipynb}` 로 **복사·고정**.
+  해당 경로를 **EXPERIMENT\_LOG + DETAIL\_LOG** 양쪽에 명시.
+
+### 7) 예시(다분기 연결)
+
+```
+## [20250811-2310_partial-summary-loss] PARTIAL 성능 열위 원인 규명
+- 가설: PARTIAL 공유가 NONE/COMPLETE보다 정확도 높다(반증될 가능성 검토).
+- 실험: tasks=21, entropy_th=0.6, …
+- 결과: PARTIAL 60.0%, NONE 80.0%, COMPLETE 80.0%
+- 원인 분석: 요약 손실/프롬프트 구조 가능성.
+- [DECISION]
+  - 선택: entropy_th 0.6→0.4, Review 프롬프트 구조 변경 테스트 병행
+  - 근거: 정보 손실 완화 + 토큰 효율 균형
+  - 영향: Review 처리량 +15% 예상
+- 향후 계획:
+  1) [20250812-1015_entropy-04] 임계 0.4 재검증
+  2) [20250812-1040_review-agg] Review Aggregator 프롬프트 도입
+  3) [20250812-1110_compressor] Context Compressor 요약 품질 실험
+- 실행 상태:
+  - [20250812-1015_entropy-04]: 완료 → 결과: 세션 [20250812-1015_entropy-04]
+  - [20250812-1040_review-agg]: 진행중
+  - [20250812-1110_compressor]: 대기
+- 관련:
+  - DETAIL_LOG.md#[20250811-2310_partial-summary-loss]
+  - 실패 코드: failed_hypotheses/20250811-2310_partial-summary-loss_summary-loss.py
+```
+
+### 8) 운영(푸시) 순서
+
+1. DETAIL\_LOG 갱신 → 2) EXPERIMENT\_LOG 갱신 → 3) SUMMARY\_LOG 갱신
+   → 4) `git add -A && git commit -m "[{session_slug}] update" && git push`
+
+### 9) 아카이브 규칙
+
+* 각 md가 800줄을 넘기면 `/archive/{YYYYMM}/`로 절단 보관하고, 루트에는 최신본 1개만 유지.
+
+---
+
+#### ✅ 요약
+
+* **문서 4개만 사용**(README/EXPERIMENT/SUMMARY/DETAIL). DECISION은 **EXPERIMENT\_LOG의 전용 블록**으로 통합.
+* **분기·연결형 포맷**으로 PLANS에 **후속 세션 슬러그**를 부여하고 EXEC\_STATUS로 상태를 추적.
+* 이상 결과는 **failed\_hypotheses/**로 코드 고정 + 양측 로그 링크.
 
 ---
 
