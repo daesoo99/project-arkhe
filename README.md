@@ -261,10 +261,10 @@ Project-Arkhē/
 # or manually: pip install -r requirements.txt && ollama pull gemma:2b
 
 # 2. Run quick test (3 tasks)
-python experiments/bench_simple.py --limit 3
+python experiments/archive/bench_simple.py --limit 3
 
 # 3. Run pipeline comparison
-python experiments/integrated_test.py
+python experiments/archive/integrated_test.py
 
 # 4. Run full benchmark matrix  
 .\scripts\run_matrix.ps1

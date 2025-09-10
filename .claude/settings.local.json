@@ -1,37 +1,11 @@
 {
   "permissions": {
     "allow": [
+      "Bash(find:*)",
       "Bash(python:*)",
-      "WebFetch(domain:openai.com)",
-      "WebFetch(domain:huggingface.co)",
-      "Bash(ollama list:*)",
-      "Bash(nvidia-smi:*)",
-      "Bash(winget install:*)",
-      "Bash(ollama:*)",
-      "Bash(refreshenv)",
-      "Bash(pip install:*)",
-      "Bash(git add:*)",
-      "Bash(git commit:*)",
-      "Bash(git push:*)",
-      "mcp__ide__getDiagnostics",
-      "Bash(npm update:*)",
-      "Bash(mv:*)",
-      "Bash(timeout:*)",
-      "Bash(git checkout:*)",
-      "Bash(git tag:*)",
-      "Bash(mkdir:*)",
-      "Bash(for f in test_*.py)",
-      "Bash(do [ -f \"$f\" ])",
-      "Bash(git mv:*)",
-      "Bash(done)",
-      "Bash(true)",
-      "Bash(rm:*)",
-      "Bash(cp:*)",
-      "Bash(copy:*)",
-      "Bash(move:*)",
-      "Bash(grep:*)",
-      "Bash(find:*)"
+      "Bash(git add:*)"
     ],
-    "deny": []
+    "deny": [],
+    "ask": []
   }
 }

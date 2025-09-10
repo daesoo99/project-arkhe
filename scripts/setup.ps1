@@ -63,7 +63,7 @@ TIMEOUT_S=120
 # 빠른 테스트
 Write-Host "`n🧪 빠른 동작 테스트..."
 try {
-    python experiments/bench_simple.py --limit 1 | Out-Null
+    python experiments/archive/bench_simple.py --limit 1 | Out-Null
     Write-Host "✅ 시스템 정상 동작" -ForegroundColor Green
 } catch {
     Write-Host "⚠️ 테스트 실패: $_" -ForegroundColor Yellow
@@ -71,6 +71,6 @@ try {
 
 Write-Host "`n🎉 설정 완료!" -ForegroundColor Green
 Write-Host "실행 명령어:" -ForegroundColor Cyan
-Write-Host "  기본 벤치마크: python experiments/bench_simple.py" -ForegroundColor White
+Write-Host "  기본 벤치마크: python experiments/archive/bench_simple.py" -ForegroundColor White
 Write-Host "  매트릭스 테스트: .\scripts\run_matrix.ps1" -ForegroundColor White
-Write-Host "  빠른 테스트: python experiments/quick_test.py" -ForegroundColor White
+Write-Host "  빠른 테스트: python experiments/archive/quick_test.py" -ForegroundColor White
