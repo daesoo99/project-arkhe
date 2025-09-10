@@ -13,7 +13,8 @@ from dataclasses import dataclass
 import statistics
 sys.path.append('.')
 
-from src.llm.simple_llm import create_llm_auto
+# Registry 시스템 사용으로 하드코딩 제거
+from src.registry.model_registry import get_model_registry
 
 @dataclass
 class BenchmarkResult:
@@ -28,12 +29,23 @@ class BenchmarkResult:
     reasoning: str = ""
 
 class BenchmarkTester:
-    """벤치마크 테스터"""
+    """벤치마크 테스터 - Registry 기반 (하드코딩 제거)"""
     
-    def __init__(self):
-        self.draft_llm = create_llm_auto("qwen2:0.5b")
-        self.review_llm = create_llm_auto("qwen2:7b") 
-        self.judge_llm = create_llm_auto("llama3:8b")
+    def __init__(self, environment: str = "development"):
+        print(f">>> 벤치마크 테스터 초기화 - 환경: {environment}")
+        
+        # Registry를 통한 설정 기반 모델 초기화 (하드코딩 제거!)
+        self.registry = get_model_registry(environment)
+        
+        # 역할별 모델 할당 (config/models.yaml 기반)
+        self.draft_llm = self.registry.get_model("undergraduate")  # 학부연구생 역할
+        self.review_llm = self.registry.get_model("graduate")      # 석박사 역할
+        self.judge_llm = self.registry.get_model("professor")      # 교수님 역할
+        
+        # 설정 정보 출력
+        print(f"  Draft 모델: {self.registry.get_model_name('undergraduate')}")
+        print(f"  Review 모델: {self.registry.get_model_name('graduate')}")
+        print(f"  Judge 모델: {self.registry.get_model_name('professor')}")
     
     def run_single_model(self, question: str, expected: str) -> BenchmarkResult:
         """Single 8B 모델"""
@@ -55,7 +67,7 @@ class BenchmarkTester:
         correct = self.is_correct(predicted, expected)
         
         return BenchmarkResult(
-            method="Single 8B",
+            method=f"Single {self.registry.get_model_name('professor')}",
             question=question,
             expected=expected,
             predicted=predicted,
@@ -223,15 +235,22 @@ def load_gsm8k_sample(n_samples: int = 100) -> List[Dict[str, str]]:
     
     return extended_problems
 
-def run_benchmark_experiment(n_samples: int = 100):
-    """벤치마크 실험 실행"""
+def run_benchmark_experiment(n_samples: int = 100, environment: str = "development"):
+    """벤치마크 실험 실행 - Registry 기반"""
     
-    print(f"=== Multi-Agent vs Single Model Benchmark ===")
+    print(f"=== Multi-Agent vs Single Model Benchmark (Registry 기반) ===")
     print(f"Testing {n_samples} math problems")
-    print(f"Models: Single(llama3:8b) vs Multi-Agent(0.5B->7B->8B)")
-    print("=" * 60)
+    print(f"환경: {environment}")
     
-    tester = BenchmarkTester()
+    tester = BenchmarkTester(environment)
+    
+    # 역할별 모델 정보 출력
+    draft_model = tester.registry.get_model_name('undergraduate')
+    review_model = tester.registry.get_model_name('graduate')
+    judge_model = tester.registry.get_model_name('professor')
+    
+    print(f"Models: Single({judge_model}) vs Multi-Agent({draft_model}->{review_model}->{judge_model})")
+    print("=" * 80)
     problems = load_gsm8k_sample(n_samples)
     
     single_results = []
@@ -334,11 +353,12 @@ def save_benchmark_results(single_results: List[BenchmarkResult], multi_results:
         "experiment_info": {
             "timestamp": int(time.time()),
             "n_samples": len(single_results),
+            "environment": getattr(single_results[0] if single_results else None, 'environment', 'unknown'),
             "models": {
-                "single": "llama3:8b",
-                "multi_draft": "qwen2:0.5b", 
-                "multi_review": "qwen2:7b",
-                "multi_judge": "llama3:8b"
+                "single": single_results[0].method.split()[-1] if single_results else "unknown",
+                "multi_draft": "undergraduate_role", 
+                "multi_review": "graduate_role",
+                "multi_judge": "professor_role"
             }
         },
         "single_results": [],
@@ -382,22 +402,32 @@ def save_benchmark_results(single_results: List[BenchmarkResult], multi_results:
         print(f"❌ Failed to save results: {e}")
 
 if __name__ == "__main__":
-    print("🚀 Starting Multi-Agent vs Single Model Benchmark")
-    print("⚠️  This will take significant time with larger sample sizes")
+    print(">>> Multi-Agent vs Single Model Benchmark 시작 (Registry 기반)")
+    print(">>> 큰 샘플 크기에서는 상당한 시간이 소요됩니다")
+    
+    # 환경 선택
+    print("\n>>> 테스트 환경 선택:")
+    print("  1. development (빠른 모델)")
+    print("  2. test (중간 성능)")
+    print("  3. production (고성능, 시간 오래 걸림)")
+    
+    choice = input("\n환경 선택 (1-3, 기본값=1): ").strip() or "1"
+    environments = {"1": "development", "2": "test", "3": "production"}
+    environment = environments.get(choice, "development")
     
     # 샘플 크기 선택
     try:
-        n = int(input("\nEnter number of problems to test (recommended: 50-100): "))
+        n = int(input("\n테스트할 문제 수 입력 (권장: 50-100): "))
         n = max(10, min(200, n))  # 10-200 사이로 제한
     except:
         n = 50
     
-    print(f"\n🔍 Testing {n} math problems...")
-    print("📝 Each problem will be solved by both Single Model and Multi-Agent")
+    print(f"\n>>> {environment} 환경에서 {n}개 수학 문제 테스트...")
+    print(">>> 각 문제마다 Single Model과 Multi-Agent 둘 다 해결")
     
-    input("\nPress Enter to start the experiment...")
+    input("\nEnter를 눌러 실험을 시작하세요...")
     
-    single_results, multi_results = run_benchmark_experiment(n)
+    single_results, multi_results = run_benchmark_experiment(n, environment)
     
-    print(f"\n✅ Benchmark experiment completed!")
-    print(f"📈 Check the results summary above and the saved JSON file for details")
+    print(f"\n>>> 벤치마크 실험 완료! (Registry 기반)")
+    print(f">>> 위의 결과 요약과 저장된 JSON 파일을 확인하세요")
