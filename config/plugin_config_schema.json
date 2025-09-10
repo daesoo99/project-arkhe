@@ -1,0 +1,197 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Project Arkhē Plugin Configuration Schema",
+  "description": "Schema for validating plugin system configuration",
+  "type": "object",
+  
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Configuration version in semver format"
+    },
+    
+    "description": {
+      "type": "string",
+      "description": "Human-readable description of the configuration"
+    },
+    
+    "default_settings": {
+      "type": "object",
+      "properties": {
+        "auto_select_scorers": {
+          "type": "boolean",
+          "description": "Automatically select scorers based on task type"
+        },
+        "default_aggregator": {
+          "type": "string",
+          "enum": ["weighted_average", "max_score", "median", "consensus"],
+          "description": "Default aggregation method"
+        },
+        "fallback_scorer": {
+          "type": "string",
+          "description": "Scorer to use when no specific scorers are available"
+        },
+        "plugin_discovery_timeout": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 300,
+          "description": "Timeout for plugin discovery in seconds"
+        },
+        "validation_strict_mode": {
+          "type": "boolean",
+          "description": "Enable strict validation mode"
+        }
+      },
+      "required": ["auto_select_scorers", "default_aggregator"]
+    },
+    
+    "plugin_paths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Directories to search for plugins"
+    },
+    
+    "plugins": {
+      "type": "object",
+      "patternProperties": {
+        "^[a-zA-Z_][a-zA-Z0-9_]*$": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Whether this plugin is enabled"
+            },
+            "priority": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10,
+              "description": "Plugin loading priority (1=highest)"
+            },
+            "settings": {
+              "type": "object",
+              "description": "Plugin-specific settings"
+            }
+          },
+          "required": ["enabled"]
+        }
+      }
+    },
+    
+    "task_specific_configs": {
+      "type": "object",
+      "patternProperties": {
+        "^(fact|reason|summary|format|code|ko|creative|analysis|philosophy|prediction)$": {
+          "type": "object",
+          "properties": {
+            "preferred_scorers": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Preferred scorers for this task type"
+            },
+            "preferred_aggregator": {
+              "type": "string",
+              "enum": ["weighted_average", "max_score", "median", "consensus"],
+              "description": "Preferred aggregator for this task type"
+            },
+            "confidence_threshold": {
+              "type": "number",
+              "minimum": 0.0,
+              "maximum": 1.0,
+              "description": "Minimum confidence threshold for accepting results"
+            }
+          }
+        }
+      }
+    },
+    
+    "experimental_features": {
+      "type": "object",
+      "properties": {
+        "parallel_scoring": {
+          "type": "object",
+          "properties": {
+            "enabled": {"type": "boolean"},
+            "max_workers": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 16
+            }
+          }
+        },
+        "plugin_hot_reload": {
+          "type": "object", 
+          "properties": {
+            "enabled": {"type": "boolean"},
+            "watch_directories": {"type": "boolean"}
+          }
+        },
+        "adaptive_weights": {
+          "type": "object",
+          "properties": {
+            "enabled": {"type": "boolean"},
+            "learning_rate": {
+              "type": "number",
+              "minimum": 0.001,
+              "maximum": 1.0
+            },
+            "update_frequency": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        },
+        "caching": {
+          "type": "object",
+          "properties": {
+            "enabled": {"type": "boolean"},
+            "cache_size": {
+              "type": "integer",
+              "minimum": 10
+            },
+            "ttl_seconds": {
+              "type": "integer",
+              "minimum": 60
+            }
+          }
+        }
+      }
+    },
+    
+    "logging": {
+      "type": "object",
+      "properties": {
+        "level": {
+          "type": "string",
+          "enum": ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
+        },
+        "plugin_operations": {"type": "boolean"},
+        "evaluation_details": {"type": "boolean"},
+        "performance_metrics": {"type": "boolean"}
+      }
+    },
+    
+    "validation": {
+      "type": "object",
+      "properties": {
+        "strict_mode": {"type": "boolean"},
+        "require_all_scorers": {"type": "boolean"},
+        "min_scorer_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_score_deviation": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0
+        }
+      }
+    }
+  },
+  
+  "required": ["version", "default_settings"]
+}

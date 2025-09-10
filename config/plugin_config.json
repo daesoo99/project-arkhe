@@ -1,0 +1,165 @@
+{
+  "$schema": "./plugin_config_schema.json",
+  "version": "1.0.0",
+  "description": "Project Arkhē Plugin System Configuration",
+  
+  "default_settings": {
+    "auto_select_scorers": true,
+    "default_aggregator": "weighted_average",
+    "fallback_scorer": "legacy_scorer",
+    "plugin_discovery_timeout": 30,
+    "validation_strict_mode": false
+  },
+  
+  "plugin_paths": [
+    "./src/plugins/builtin",
+    "./src/plugins/scorers", 
+    "./src/plugins/aggregators",
+    "./external_plugins"
+  ],
+  
+  "plugins": {
+    "legacy_scorer": {
+      "enabled": true,
+      "priority": 1,
+      "settings": {
+        "enable_caching": true,
+        "timeout_seconds": 60,
+        "fallback_on_error": true
+      }
+    },
+    
+    "standard_aggregators": {
+      "enabled": true,
+      "priority": 1,
+      "settings": {
+        "weighted_average": {
+          "weights": {
+            "exact_match": 1.5,
+            "semantic_similarity": 1.2,
+            "structural_similarity": 1.0,
+            "keyword_match": 0.8,
+            "length_similarity": 0.5,
+            "no_match": 0.1
+          },
+          "normalize_weights": true
+        },
+        
+        "consensus": {
+          "threshold": 0.15,
+          "min_agreement_ratio": 0.7
+        },
+        
+        "max_score": {
+          "confidence_boost": 0.1,
+          "unanimous_bonus": 0.05
+        },
+        
+        "median": {
+          "outlier_detection": true,
+          "mad_threshold": 0.3
+        }
+      }
+    }
+  },
+  
+  "task_specific_configs": {
+    "fact": {
+      "preferred_scorers": ["legacy_scorer"],
+      "preferred_aggregator": "consensus",
+      "confidence_threshold": 0.7
+    },
+    
+    "reason": {
+      "preferred_scorers": ["legacy_scorer"],
+      "preferred_aggregator": "weighted_average",
+      "confidence_threshold": 0.6
+    },
+    
+    "summary": {
+      "preferred_scorers": ["legacy_scorer"],
+      "preferred_aggregator": "median",
+      "confidence_threshold": 0.5
+    },
+    
+    "code": {
+      "preferred_scorers": ["legacy_scorer"],
+      "preferred_aggregator": "max_score",
+      "confidence_threshold": 0.8
+    },
+    
+    "ko": {
+      "preferred_scorers": ["legacy_scorer"],
+      "preferred_aggregator": "weighted_average",
+      "confidence_threshold": 0.6
+    },
+    
+    "creative": {
+      "preferred_scorers": ["legacy_scorer"],
+      "preferred_aggregator": "median",
+      "confidence_threshold": 0.4
+    },
+    
+    "analysis": {
+      "preferred_scorers": ["legacy_scorer"],
+      "preferred_aggregator": "weighted_average",
+      "confidence_threshold": 0.7
+    },
+    
+    "philosophy": {
+      "preferred_scorers": ["legacy_scorer"],
+      "preferred_aggregator": "consensus",
+      "confidence_threshold": 0.5
+    },
+    
+    "prediction": {
+      "preferred_scorers": ["legacy_scorer"],
+      "preferred_aggregator": "median",
+      "confidence_threshold": 0.6
+    },
+    
+    "format": {
+      "preferred_scorers": ["legacy_scorer"],
+      "preferred_aggregator": "max_score",
+      "confidence_threshold": 0.9
+    }
+  },
+  
+  "experimental_features": {
+    "parallel_scoring": {
+      "enabled": false,
+      "max_workers": 4
+    },
+    
+    "plugin_hot_reload": {
+      "enabled": false,
+      "watch_directories": true
+    },
+    
+    "adaptive_weights": {
+      "enabled": false,
+      "learning_rate": 0.01,
+      "update_frequency": 100
+    },
+    
+    "caching": {
+      "enabled": true,
+      "cache_size": 1000,
+      "ttl_seconds": 3600
+    }
+  },
+  
+  "logging": {
+    "level": "INFO",
+    "plugin_operations": true,
+    "evaluation_details": false,
+    "performance_metrics": true
+  },
+  
+  "validation": {
+    "strict_mode": false,
+    "require_all_scorers": false,
+    "min_scorer_count": 1,
+    "max_score_deviation": 0.5
+  }
+}
