@@ -10,7 +10,8 @@ import json
 from typing import List, Dict, Any
 sys.path.append('.')
 
-from src.llm.simple_llm import create_llm_auto
+# Registry 시스템 사용으로 하드코딩 제거
+from src.registry.model_registry import get_model_registry
 
 def test_basic_arithmetic():
     """기본 사칙연산 테스트"""
@@ -52,16 +53,27 @@ def test_korean_understanding():
     return tests
 
 class BasicModelTester:
-    """기본 모델 테스터"""
+    """기본 모델 테스터 - Registry 기반 (하드코딩 제거)"""
     
-    def __init__(self):
-        print("🔍 모델 로딩 중...")
-        self.models = {
-            "qwen2:0.5b": create_llm_auto("qwen2:0.5b"),
-            "qwen2:7b": create_llm_auto("qwen2:7b"), 
-            "llama3:8b": create_llm_auto("llama3:8b")
-        }
-        print("✅ 모든 모델 로딩 완료")
+    def __init__(self, environment: str = "development"):
+        print(">>> 모델 로딩 중... (Registry 기반)")
+        
+        # Registry를 통한 설정 기반 모델 로딩
+        self.registry = get_model_registry(environment)
+        
+        # 설정에서 정의된 모든 모델 로딩 (하드코딩 제거!)
+        available_models = self.registry.list_available_models()
+        self.models = {}
+        
+        # 각 티어별 모델을 이름으로 매핑
+        for tier, model_name in available_models.items():
+            self.models[model_name] = self.registry.get_model(tier)
+        
+        # 설정 정보 출력
+        print("  사용 가능한 모델:")
+        for model_name in self.models.keys():
+            print(f"    - {model_name}")
+        print(">>> 모든 모델 로딩 완료 (Registry 기반)")
     
     def extract_answer(self, response_text: str) -> str:
         """답변에서 숫자 추출"""
@@ -180,13 +192,14 @@ class BasicModelTester:
         
         return results
 
-def run_comprehensive_test():
-    """종합 테스트 실행"""
+def run_comprehensive_test(environment: str = "development"):
+    """종합 테스트 실행 - Registry 기반"""
     print("=" * 80)
-    print("🧮 기본 모델 성능 점검 테스트")
+    print(">>> 기본 모델 성능 점검 테스트 (Registry 기반)")
+    print(f">>> 환경: {environment}")
     print("=" * 80)
     
-    tester = BasicModelTester()
+    tester = BasicModelTester(environment)
     
     # 테스트 케이스 준비
     test_suites = [
@@ -307,13 +320,22 @@ def save_test_results(results: Dict):
         print(f"❌ 결과 저장 실패: {e}")
 
 if __name__ == "__main__":
-    print("🚀 기본 모델 성능 점검을 시작합니다...")
-    print("📝 각 모델의 수학 능력과 언어 이해력을 개별 테스트합니다")
-    print("⏱️  예상 소요 시간: 5-10분")
+    print(">>> 기본 모델 성능 점검을 시작합니다... (Registry 기반)")
+    print(">>> 각 모델의 수학 능력과 언어 이해력을 개별 테스트합니다")
+    print(">>> 예상 소요 시간: 5-10분")
     
-    input("\nEnter를 눌러 테스트를 시작하세요...")
+    # 환경별 테스트 옵션
+    print("\n>>> 테스트 환경 선택:")
+    print("  1. development (빠른 테스트)")
+    print("  2. test (중간 성능)")
+    print("  3. production (고성능, 시간 오래 걸림)")
     
-    results = run_comprehensive_test()
+    choice = input("\n환경 선택 (1-3, 기본값=1): ").strip() or "1"
+    environments = {"1": "development", "2": "test", "3": "production"}
+    environment = environments.get(choice, "development")
     
-    print(f"\n✅ 모든 테스트 완료!")
-    print(f"📈 위 분석을 통해 각 모델의 강약점을 파악할 수 있습니다")
+    print(f"\n>>> {environment} 환경으로 테스트 시작...")
+    results = run_comprehensive_test(environment)
+    
+    print(f"\n>>> 모든 테스트 완료! (Registry 기반)")
+    print(f">>> 위 분석을 통해 각 모델의 강약점을 파악할 수 있습니다")
