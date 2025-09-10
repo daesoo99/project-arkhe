@@ -8,24 +8,35 @@ import time
 import json
 sys.path.append('.')
 
-from src.llm.simple_llm import create_llm_auto
+# Registry 시스템 사용으로 하드코딩 제거
+from src.registry.model_registry import get_model_registry
 
-def simple_hierarchical_test():
-    """Simplified hierarchical test"""
+def simple_hierarchical_test(environment: str = "development"):
+    """Simplified hierarchical test - Registry 기반 (하드코딩 제거)"""
     
-    # Initialize models
-    draft_llm = create_llm_auto("qwen2:0.5b")
-    review_llm = create_llm_auto("qwen2:7b") 
-    judge_llm = create_llm_auto("llama3:8b")
+    print(f">>> 계층적 멀티에이전트 테스트 시작 - 환경: {environment}")
+    
+    # Registry를 통한 설정 기반 모델 초기화 (하드코딩 제거!)
+    registry = get_model_registry(environment)
+    
+    # 역할별 모델 할당 (config/models.yaml 기반)
+    draft_llm = registry.get_model("undergraduate")  # 학부연구생 역할
+    review_llm = registry.get_model("graduate")      # 석박사 역할
+    judge_llm = registry.get_model("professor")      # 교수님 역할
+    
+    # 설정 정보 출력
+    print(f"  Draft 모델: {registry.get_model_name('undergraduate')}")
+    print(f"  Review 모델: {registry.get_model_name('graduate')}")
+    print(f"  Judge 모델: {registry.get_model_name('professor')}")
     
     # Test case
     question = "What is the capital of South Korea?"
     expected = "Seoul"
     
-    print("=== Hierarchical Multi-Agent Comparison ===")
-    print("Option 1: Draft(0.5B) -> Review(7B) -> Judge(8B)")
-    print("Option 2: Draft(0.5B) -> Judge(8B)")
-    print("Option 3: Single 8B Model")
+    print("\n=== Hierarchical Multi-Agent Comparison (Registry 기반) ===")
+    print(f"Option 1: Draft({registry.get_model_name('undergraduate')}) -> Review({registry.get_model_name('graduate')}) -> Judge({registry.get_model_name('professor')})")
+    print(f"Option 2: Draft({registry.get_model_name('undergraduate')}) -> Judge({registry.get_model_name('professor')})")
+    print(f"Option 3: Single {registry.get_model_name('professor')} Model")
     print()
     
     results = []
@@ -231,4 +242,20 @@ Final judgment:"""
     return results
 
 if __name__ == "__main__":
-    results = simple_hierarchical_test()
+    print(">>> 간소화된 계층적 비교 테스트 시작... (Registry 기반)")
+    
+    # 환경별 테스트 옵션
+    print("\n>>> 테스트 환경 선택:")
+    print("  1. development (빠른 테스트)")
+    print("  2. test (중간 성능)")
+    print("  3. production (고성능, 시간 오래 걸림)")
+    
+    choice = input("\n환경 선택 (1-3, 기본값=1): ").strip() or "1"
+    environments = {"1": "development", "2": "test", "3": "production"}
+    environment = environments.get(choice, "development")
+    
+    print(f"\n>>> {environment} 환경으로 테스트 시작...")
+    results = simple_hierarchical_test(environment)
+    
+    print(f"\n>>> 테스트 완료! (Registry 기반)")
+    print(f">>> 결과 파일: results/simple_hierarchical_results.json")
