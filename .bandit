@@ -1,0 +1,43 @@
+# -*- coding: utf-8 -*-
+# Bandit Security Scanner Configuration
+
+[bandit]
+# Test IDs to exclude from scan
+exclude_dirs = [
+    "./experiments/archive/deprecated",
+    "./build", 
+    "./dist",
+    "./.venv",
+    "./.env",
+    "./htmlcov"
+]
+
+# Test IDs to skip
+skips = [
+    "B101",  # assert_used - asserts are OK in research/test code
+    "B601",  # paramiko_calls - if we use SSH libraries
+    "B602",  # subprocess_popen_with_shell_equals_true - may be needed for some experiments
+]
+
+# Test IDs to run (empty = run all except skipped)
+tests = []
+
+# Confidence levels: LOW, MEDIUM, HIGH
+confidence = "MEDIUM"
+
+# Severity levels: LOW, MEDIUM, HIGH  
+severity = "MEDIUM"
+
+# Output format: csv, custom, html, json, screen, txt, xml, yaml
+format = "screen"
+
+# Ignore nosec comments
+ignore_nosec = false
+
+# Exclude test files from some security checks
+[bandit.any_other_function_with_shell_equals_true]
+shell = [
+    "experiments/prototypes/*.py",
+    "experiments/benchmarks/*.py", 
+    "experiments/analysis/*.py"
+]
