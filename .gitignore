@@ -1,1 +1,43 @@
-\".venv/\n.env\n__pycache__/\n*.pyc\n.idea/\n.vscode/\" 
+# Runtime files
+logs/
+results/
+failed_hypotheses/
+*.log
+*.tmp
+.DS_Store
+
+# Environment
+.env
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Notebooks cache  
+.ipynb_checkpoints/
+
+# OS / IDE
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Large files (use LFS)
+*.csv
+*.json
+*.jsonl
+
+# Keep examples and datasets
+!results/examples/
+!datasets/*.json
+!datasets/*.py
+
+# Archive directory (800+ lines)
+archive/
+
+# Temporary experiment files
+experiments/temp/
+experiments/*/output/
+artifacts/

@@ -1,19 +1,13 @@
 {
   "permissions": {
     "allow": [
+      "Bash(find:*)",
       "Bash(python:*)",
-      "WebFetch(domain:openai.com)",
-      "WebFetch(domain:huggingface.co)",
-      "Bash(ollama list:*)",
-      "Bash(nvidia-smi:*)",
-      "Bash(winget install:*)",
-      "Bash(ollama:*)",
-      "Bash(refreshenv)",
-      "Bash(pip install:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)",
-      "Bash(git push:*)"
+      "Bash(make:*)",
+      "Bash(git commit:*)"
     ],
-    "deny": []
+    "deny": [],
+    "ask": []
   }
 }

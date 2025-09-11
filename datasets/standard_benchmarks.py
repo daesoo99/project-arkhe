@@ -1,0 +1,290 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Project Arkhē - Standard Benchmark Dataset Loader
+GSM8K + MMLU + HumanEval 혼합 벤치마크
+"""
+
+import json
+import random
+from typing import List, Dict, Any
+from dataclasses import dataclass
+from pathlib import Path
+
+@dataclass
+class BenchmarkQuestion:
+    """표준 벤치마크 질문"""
+    id: str
+    query: str
+    expected_answer: str
+    category: str  # "math", "knowledge", "coding"
+    difficulty: str  # "easy", "medium", "hard"
+    source: str  # "GSM8K", "MMLU", "HumanEval"
+    
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "id": self.id,
+            "query": self.query,
+            "expected_answer": self.expected_answer,
+            "category": self.category,
+            "difficulty": self.difficulty,
+            "source": self.source
+        }
+
+class StandardBenchmarkLoader:
+    """표준 벤치마크 데이터셋 로더"""
+    
+    def __init__(self):
+        self.questions = []
+        self._load_all_datasets()
+    
+    def _load_all_datasets(self):
+        """모든 데이터셋 로드"""
+        # GSM8K 수학 문제들
+        self.questions.extend(self._create_gsm8k_questions())
+        
+        # MMLU 지식 문제들  
+        self.questions.extend(self._create_mmlu_questions())
+        
+        # HumanEval 코딩 문제들
+        self.questions.extend(self._create_humaneval_questions())
+        
+        # 섞기
+        random.shuffle(self.questions)
+    
+    def _create_gsm8k_questions(self) -> List[BenchmarkQuestion]:
+        """GSM8K 스타일 수학 문제들"""
+        return [
+            BenchmarkQuestion(
+                id="gsm8k_001",
+                query="Janet's ducks lay 16 eggs per day. She eats 3 for breakfast every morning and bakes 4 into muffins for her friends every day. She sells the remainder at the farmers' market daily for $2 per egg. How much money does she make every day?",
+                expected_answer="18",
+                category="math",
+                difficulty="medium",
+                source="GSM8K"
+            ),
+            BenchmarkQuestion(
+                id="gsm8k_002", 
+                query="A robe takes 2 bolts of blue fiber and half that much white fiber. How many bolts in total does it take?",
+                expected_answer="3",
+                category="math",
+                difficulty="easy",
+                source="GSM8K"
+            ),
+            BenchmarkQuestion(
+                id="gsm8k_003",
+                query="Josh decides to try flipping a house. He buys a house for $80,000 and then puts in $50,000 in repairs. This increased the value of the house by 150%. How much profit did he make?",
+                expected_answer="115000",
+                category="math", 
+                difficulty="medium",
+                source="GSM8K"
+            ),
+            BenchmarkQuestion(
+                id="gsm8k_004",
+                query="There are 15 trees in the grove. Grove workers will plant trees today. After they are done there will be 21 trees. How many trees did the workers plant today?",
+                expected_answer="6",
+                category="math",
+                difficulty="easy", 
+                source="GSM8K"
+            ),
+            BenchmarkQuestion(
+                id="gsm8k_005",
+                query="If there are 3 cars in the parking lot and 2 more cars arrive, how many cars are in the parking lot?",
+                expected_answer="5",
+                category="math",
+                difficulty="easy",
+                source="GSM8K"
+            )
+        ]
+    
+    def _create_mmlu_questions(self) -> List[BenchmarkQuestion]:
+        """MMLU 스타일 다중 도메인 지식 문제들"""
+        return [
+            BenchmarkQuestion(
+                id="mmlu_001",
+                query="Which of the following is the capital of Australia? (A) Sydney (B) Melbourne (C) Canberra (D) Perth",
+                expected_answer="Canberra",
+                category="knowledge",
+                difficulty="easy",
+                source="MMLU"
+            ),
+            BenchmarkQuestion(
+                id="mmlu_002",
+                query="What is the powerhouse of the cell?",
+                expected_answer="mitochondria",
+                category="knowledge",
+                difficulty="medium",
+                source="MMLU"
+            ),
+            BenchmarkQuestion(
+                id="mmlu_003", 
+                query="In which year did World War II end?",
+                expected_answer="1945",
+                category="knowledge",
+                difficulty="easy",
+                source="MMLU"
+            ),
+            BenchmarkQuestion(
+                id="mmlu_004",
+                query="What is the chemical symbol for gold?",
+                expected_answer="Au",
+                category="knowledge", 
+                difficulty="medium",
+                source="MMLU"
+            ),
+            BenchmarkQuestion(
+                id="mmlu_005",
+                query="Who wrote the novel '1984'?",
+                expected_answer="George Orwell",
+                category="knowledge",
+                difficulty="medium",
+                source="MMLU"
+            ),
+            BenchmarkQuestion(
+                id="mmlu_006",
+                query="What is the largest planet in our solar system?",
+                expected_answer="Jupiter", 
+                category="knowledge",
+                difficulty="easy",
+                source="MMLU"
+            )
+        ]
+    
+    def _create_humaneval_questions(self) -> List[BenchmarkQuestion]:
+        """HumanEval 스타일 코딩 문제들"""
+        return [
+            BenchmarkQuestion(
+                id="humaneval_001",
+                query="Write a Python function that returns the sum of two numbers.",
+                expected_answer="def add(a, b): return a + b",
+                category="coding",
+                difficulty="easy",
+                source="HumanEval"
+            ),
+            BenchmarkQuestion(
+                id="humaneval_002",
+                query="Write a Python function that checks if a number is even.",
+                expected_answer="def is_even(n): return n % 2 == 0",
+                category="coding",
+                difficulty="easy", 
+                source="HumanEval"
+            ),
+            BenchmarkQuestion(
+                id="humaneval_003",
+                query="Write a Python function that returns the factorial of a number.",
+                expected_answer="def factorial(n): return 1 if n <= 1 else n * factorial(n-1)",
+                category="coding",
+                difficulty="medium",
+                source="HumanEval"
+            ),
+            BenchmarkQuestion(
+                id="humaneval_004",
+                query="Write a Python function that finds the maximum number in a list.",
+                expected_answer="def find_max(lst): return max(lst)",
+                category="coding",
+                difficulty="easy",
+                source="HumanEval"
+            ),
+            BenchmarkQuestion(
+                id="humaneval_005",
+                query="Write a Python function that reverses a string.",
+                expected_answer="def reverse_string(s): return s[::-1]",
+                category="coding",
+                difficulty="easy",
+                source="HumanEval"
+            )
+        ]
+    
+    def get_questions(self, 
+                     count: int = 20,
+                     categories: List[str] = None,
+                     difficulties: List[str] = None) -> List[BenchmarkQuestion]:
+        """필터링된 질문들 반환"""
+        filtered = self.questions
+        
+        if categories:
+            filtered = [q for q in filtered if q.category in categories]
+        
+        if difficulties:
+            filtered = [q for q in filtered if q.difficulty in difficulties]
+        
+        # 균등 샘플링 (각 카테고리에서 비슷하게)
+        if count < len(filtered):
+            if categories:
+                # 카테고리별로 균등하게
+                per_category = count // len(categories)
+                result = []
+                for category in categories:
+                    cat_questions = [q for q in filtered if q.category == category]
+                    result.extend(random.sample(cat_questions, min(per_category, len(cat_questions))))
+                filtered = result[:count]
+            else:
+                filtered = random.sample(filtered, count)
+        
+        return filtered
+    
+    def save_to_file(self, filepath: str):
+        """파일로 저장"""
+        data = [q.to_dict() for q in self.questions]
+        with open(filepath, 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+        print(f"[+] Saved {len(self.questions)} questions to {filepath}")
+    
+    def get_statistics(self) -> Dict[str, Any]:
+        """데이터셋 통계"""
+        stats = {
+            "total": len(self.questions),
+            "by_category": {},
+            "by_difficulty": {},
+            "by_source": {}
+        }
+        
+        for q in self.questions:
+            # 카테고리별
+            if q.category not in stats["by_category"]:
+                stats["by_category"][q.category] = 0
+            stats["by_category"][q.category] += 1
+            
+            # 난이도별
+            if q.difficulty not in stats["by_difficulty"]:
+                stats["by_difficulty"][q.difficulty] = 0
+            stats["by_difficulty"][q.difficulty] += 1
+            
+            # 소스별
+            if q.source not in stats["by_source"]:
+                stats["by_source"][q.source] = 0
+            stats["by_source"][q.source] += 1
+        
+        return stats
+
+def create_mixed_benchmark_dataset():
+    """혼합 벤치마크 데이터셋 생성"""
+    print("=" * 50)
+    print("*** MIXED BENCHMARK DATASET CREATOR ***")
+    print("GSM8K + MMLU + HumanEval")
+    print("=" * 50)
+    
+    loader = StandardBenchmarkLoader()
+    
+    # 통계 출력
+    stats = loader.get_statistics()
+    print(f"\n[+] Dataset Statistics:")
+    print(f"  Total Questions: {stats['total']}")
+    print(f"  Categories: {stats['by_category']}")
+    print(f"  Difficulties: {stats['by_difficulty']}")
+    print(f"  Sources: {stats['by_source']}")
+    
+    # 파일 저장
+    output_path = Path(__file__).parent / "mixed_benchmark.json"
+    loader.save_to_file(str(output_path))
+    
+    # 샘플 테스트
+    print(f"\n[+] Sample Questions:")
+    samples = loader.get_questions(count=3)
+    for i, q in enumerate(samples, 1):
+        print(f"  {i}. [{q.source}|{q.category}] {q.query[:50]}...")
+    
+    return loader
+
+if __name__ == "__main__":
+    create_mixed_benchmark_dataset()

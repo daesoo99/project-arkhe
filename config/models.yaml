@@ -1,0 +1,85 @@
+# Project Arkhē - Model Configuration
+# 모든 모델 설정을 중앙집중식으로 관리
+
+version: "1.0"
+created: "2025-01-09"
+
+# 모델 티어 정의 (성능-비용 기준)
+models:
+  small:
+    name: "qwen2:0.5b"
+    cost_factor: 0.8
+    context_window: 4096
+    description: "초소형 모델 - Draft, 빠른 프로토타이핑용"
+    provider: "ollama"
+    
+  medium:
+    name: "qwen2:7b"
+    cost_factor: 1.0
+    context_window: 8192
+    description: "중형 모델 - Review, 개선 작업용"
+    provider: "ollama"
+    
+  large:
+    name: "llama3:8b"
+    cost_factor: 4.0
+    context_window: 8192
+    description: "대형 모델 - Judge, 최종 결정용"
+    provider: "ollama"
+
+# 역할별 모델 할당 (Multi-Agent Pipeline)
+roles:
+  draft: "small"
+  review: "medium"  
+  judge: "large"
+  
+  # 특수 역할들
+  undergraduate: "small"    # 학부연구생 역할
+  graduate: "medium"        # 석박사 역할  
+  professor: "large"        # 교수님 역할
+  
+  # 단일 모델 비교용
+  baseline_single: "large"
+
+# 환경별 설정 오버라이드
+environments:
+  development:
+    # 개발시에는 작은 모델로 빠른 테스트
+    roles:
+      judge: "medium"  # large → medium으로 다운그레이드
+      
+  production:
+    # 프로덕션에서는 원래 설정 유지
+    roles: null  # 기본 설정 사용
+    
+  test:
+    # 테스트시에는 모든 것을 small로
+    roles:
+      draft: "small"
+      review: "small" 
+      judge: "small"
+
+# 비용 계산 설정
+cost_calculation:
+  base_multiplier: 1.0
+  token_cost_per_1k: 0.001
+  latency_penalty_factor: 0.3
+  compute_cost_factor: 0.7
+
+# Provider별 기본 설정
+providers:
+  ollama:
+    base_url: "http://127.0.0.1:11434"
+    timeout: 120
+    temperature: 0.2
+    max_tokens: 512
+    
+  openai:
+    timeout: 30
+    temperature: 0.2
+    max_tokens: 512
+    
+  anthropic:
+    timeout: 30
+    temperature: 0.2
+    max_tokens: 512

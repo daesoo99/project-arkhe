@@ -1,0 +1,202 @@
+# -*- coding: utf-8 -*-
+# Project Arkhē - Experiment Configuration Templates
+# 실험별 매개변수와 설정을 중앙집중식으로 관리
+
+# 기본 실험 매개변수 템플릿
+defaults:
+  generation_params:
+    temperature: 0.1
+    max_tokens: 200
+    top_p: 1.0
+    frequency_penalty: 0.0
+    presence_penalty: 0.0
+  
+  timeout_settings:
+    model_call_timeout: 30  # seconds
+    experiment_timeout: 3600  # 1 hour
+    
+  retry_policy:
+    max_retries: 3
+    backoff_factor: 1.5
+    
+  output_settings:
+    save_intermediate: true
+    save_full_responses: true
+    log_level: "INFO"
+
+# 실험별 특화 설정 템플릿
+experiment_templates:
+  
+  # 기본 모델 테스트 (individual model assessment)
+  basic_model_test:
+    description: "Individual model performance assessment"
+    roles_required: ["small", "medium", "large"]
+    generation_params:
+      temperature: 0.1
+      max_tokens: 100
+      prompts_per_model: 4  # 다양한 프롬프트 스타일
+    test_categories:
+      - "기본 사칙연산"
+      - "간단한 Word Problem"  
+      - "다단계 계산"
+      - "한국어 이해력"
+    metrics:
+      - accuracy
+      - response_time
+      - token_usage
+      - prompt_effectiveness
+  
+  # 계층적 다중 에이전트 테스트
+  hierarchical_multiagent:
+    description: "Hierarchical multi-agent system comparison"
+    roles_required: ["undergraduate", "graduate", "professor"]
+    generation_params:
+      draft_temperature: 0.3  # higher creativity for drafts
+      review_temperature: 0.2  # balanced analysis
+      judge_temperature: 0.1   # consistent final decisions  
+      draft_max_tokens: 200
+      review_max_tokens: 250
+      judge_max_tokens: 200
+    pipeline_config:
+      draft_count: 3
+      review_count: 2
+      enable_review_stage: true
+    test_scenarios:
+      - "Option 1: Draft->Review->Judge"
+      - "Option 2: Draft->Judge (skip Review)"
+      - "Option 3: Single Judge Model"
+    metrics:
+      - accuracy
+      - token_efficiency
+      - time_efficiency
+      - stage_value_analysis
+  
+  # 벤치마크 비교 실험
+  benchmark_comparison:
+    description: "Statistical comparison across multiple problems"
+    roles_required: ["undergraduate", "graduate", "professor"]  
+    generation_params:
+      single_temperature: 0.1
+      single_max_tokens: 300
+      draft_temperature: 0.2
+      draft_max_tokens: 200
+      review_temperature: 0.3
+      review_max_tokens: 250
+      judge_temperature: 0.1
+      judge_max_tokens: 200
+    experiment_params:
+      sample_size: 50  # number of problems to test
+      min_samples: 10
+      max_samples: 200
+      problem_categories:
+        - "basic_arithmetic"
+        - "multi_step_problems" 
+        - "complex_word_problems"
+    statistical_settings:
+      confidence_level: 0.95
+      significance_threshold: 0.05
+      effect_size_threshold: 0.1
+    metrics:
+      - accuracy_comparison
+      - token_ratio
+      - time_ratio  
+      - statistical_significance
+
+# 환경별 오버라이드 설정
+environments:
+  development:
+    defaults:
+      generation_params:
+        max_tokens: 100  # 빠른 테스트를 위해 줄임
+      timeout_settings:
+        model_call_timeout: 15
+        experiment_timeout: 1800  # 30분
+    experiment_templates:
+      benchmark_comparison:
+        experiment_params:
+          sample_size: 10  # 개발 환경에서는 소규모 테스트
+          
+  test:  
+    defaults:
+      generation_params:
+        max_tokens: 150
+      timeout_settings:
+        model_call_timeout: 20
+        experiment_timeout: 2400  # 40분
+    experiment_templates:
+      benchmark_comparison:
+        experiment_params:
+          sample_size: 25
+          
+  production:
+    defaults:
+      generation_params:
+        max_tokens: 300  # 완전한 응답
+      timeout_settings:
+        model_call_timeout: 60
+        experiment_timeout: 7200  # 2시간
+    experiment_templates:
+      benchmark_comparison:
+        experiment_params:
+          sample_size: 100  # 통계적 유의성을 위한 충분한 샘플
+
+# 실험 매개변수 스위핑 설정
+parameter_sweeps:
+  temperature_sweep:
+    description: "Compare performance across temperature values"
+    base_template: "basic_model_test"
+    sweep_params:
+      temperature: [0.0, 0.1, 0.3, 0.5, 0.7, 1.0]
+    fixed_params:
+      max_tokens: 200
+      
+  token_limit_sweep:
+    description: "Analyze impact of token limits on quality"  
+    base_template: "hierarchical_multiagent"
+    sweep_params:
+      draft_max_tokens: [50, 100, 200, 300]
+      judge_max_tokens: [100, 200, 300, 400]
+    metrics:
+      - quality_vs_tokens
+      - cost_efficiency
+      
+  pipeline_ablation:
+    description: "Study contribution of each pipeline stage"
+    base_template: "hierarchical_multiagent"
+    sweep_params:
+      enable_review_stage: [true, false]
+      draft_count: [1, 2, 3, 5]
+      review_count: [1, 2, 3]
+    metrics:
+      - stage_contribution
+      - optimal_pipeline_config
+
+# 실험 결과 저장 및 분석 설정  
+output_config:
+  base_path: "results"
+  filename_template: "{experiment_type}_{environment}_{timestamp}"
+  formats:
+    - "json"  # 구조화된 데이터
+    - "csv"   # 통계 분석용
+    - "md"    # 리포트용
+  
+  metadata_fields:
+    - timestamp
+    - environment
+    - model_registry_config
+    - experiment_template_used
+    - parameter_overrides
+    - git_commit_hash
+    
+  analysis_config:
+    auto_generate_plots: true
+    plot_types:
+      - "accuracy_comparison"
+      - "token_efficiency" 
+      - "time_series"
+      - "parameter_sensitivity"
+    report_sections:
+      - "executive_summary"
+      - "detailed_metrics"
+      - "statistical_analysis"
+      - "recommendations"

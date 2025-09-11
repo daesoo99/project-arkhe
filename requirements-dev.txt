@@ -1,0 +1,38 @@
+# -*- coding: utf-8 -*-
+# Development Dependencies for Code Quality
+
+# Core dependencies
+-r requirements.txt
+
+# Code Quality & Linting
+flake8>=6.0.0              # PEP 8 style guide checker
+black>=23.0.0              # Code formatter
+pylint>=3.0.0              # Static analysis
+mypy>=1.0.0                # Type checking
+isort>=5.12.0              # Import sorting
+
+# Security & Vulnerability Scanning
+bandit>=1.7.0              # Security vulnerability scanner
+safety>=2.3.0              # Dependency vulnerability checker
+semgrep>=1.45.0            # Static analysis security scanner
+
+# Dependencies Analysis
+pipdeptree>=2.13.0         # Dependency tree visualization
+pip-audit>=2.6.0           # PyPI package vulnerability scanner
+
+# Testing & Coverage
+pytest>=7.4.0             # Testing framework
+pytest-cov>=4.1.0         # Coverage reporting
+pytest-mock>=3.11.0       # Mock utilities
+
+# Documentation & Type Hints
+pydocstyle>=6.3.0          # Docstring style checker
+darglint>=1.8.0            # Docstring argument checker
+
+# Performance & Profiling
+memory-profiler>=0.61.0   # Memory usage profiler
+line-profiler>=4.1.0      # Line-by-line profiler
+py-spy>=0.3.0              # Sampling profiler
+
+# Additional tokens/encoding support
+tiktoken>=0.5.0            # OpenAI tokenizer (for accurate token counting)
