@@ -5,7 +5,14 @@
       "Bash(python:*)",
       "Bash(git add:*)",
       "Bash(make:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(git checkout:*)",
+      "Bash(git push:*)",
+      "WebSearch",
+      "WebFetch(domain:dl.acm.org)",
+      "Bash(ollama list:*)",
+      "Bash(ollama search:*)",
+      "WebFetch(domain:ollama.com)"
     ],
     "deny": [],
     "ask": []
